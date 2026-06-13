@@ -91,7 +91,10 @@ func (container *Container) validate(mode validation.RuntimeMode, opt ...validat
 	}
 
 	// now cross-validate the config
-	if container.v1alpha1Config != nil {
+	// only checked during client-side validation: provider-generated configs may legitimately
+	// set both v1alpha1 fields and new document types during the API transition period.
+	opts := validation.NewOptions(opt...)
+	if container.v1alpha1Config != nil && opts.Local {
 		for _, doc := range container.documents {
 			if conflictValidator, ok := doc.(V1Alpha1ConflictValidator); ok {
 				err := conflictValidator.V1Alpha1ConflictValidate(container.v1alpha1Config)
